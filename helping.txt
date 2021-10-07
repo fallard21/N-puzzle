@@ -1,0 +1,15 @@
+https://github.com/JaneHJY/8_puzzle/blob/master/8_puzzle.py
+https://www.youtube.com/watch?v=GuCzYxHa7iA
+
+https://medium.com/nuances-of-programming/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC-%D0%BF%D0%BE%D0%B8%D1%81%D0%BA%D0%B0-a-3bb59be05a79
+
+https://neerc.ifmo.ru/wiki/index.php?title=%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_A*
+
+https://en.wikipedia.org/wiki/A*_search_algorithm
+https://ru.wikipedia.org/wiki/A*
+
+https://www.pvsm.ru/java/16174
+
+https://pythonist.ru/algoritm-a-star-i-ego-realizacziya-na-python/
+
+https://www.dokwork.ru/2012/03/blog-post.html
