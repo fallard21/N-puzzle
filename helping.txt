@@ -13,3 +13,9 @@ https://www.pvsm.ru/java/16174
 https://pythonist.ru/algoritm-a-star-i-ego-realizacziya-na-python/
 
 https://www.dokwork.ru/2012/03/blog-post.html
+
+https://habr.com/ru/post/331192/
+https://habr.com/ru/post/331220/
+
+http://theory.stanford.edu/~amitp/GameProgramming/
+
