@@ -6,7 +6,7 @@ class Board():
 		self.board = new_board
 		self.parent = new_parent
 		self.h = 0
-		self.g = 0 if not new_parent else self.parent.g + 1
+		self.g = 0 if not self.parent else self.parent.g + 1
 		self.f = 0
 		self.zero_x = 0 # ?
 		self.zero_y = 0 # ?
