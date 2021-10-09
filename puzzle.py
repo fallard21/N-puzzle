@@ -99,6 +99,14 @@ class Board():
 	def __str__(self) -> str:
 		return '\n'.join(map(str, self.board)) + f'\tg = {self.g}, h = {self.h}, f = {self.get_f()}'
 
+def get_best_f(nodes : list):
+	min_node = nodes[0]
+	min = nodes[0].get_f()
+	for node in nodes:
+		if node.get_f() < min:
+			min_node = node
+			min = node.get_f()
+	return min_node
 
 def solver(board):
 	queue = deque()
@@ -116,22 +124,33 @@ def solver(board):
 		if x < w - 1: # Сдвиг вправо
 			node = Board(current_node.get_board(), current_node, 'right')
 			if node not in closed:
-				queue.append(node)
+				opened.append(node)
 		if x > 0: # Сдвиг влево
 			node = Board(current_node.get_board(), current_node, 'left')
 			if node not in closed:
-				queue.append(node)
+				opened.append(node)
 		if y > 0: # Сдвиг вверх
 			node = Board(current_node.get_board(), current_node, 'up')
 			if node not in closed:
-				queue.append(node)
+				opened.append(node)
 		if y < h - 1: # Сдвиг вниз
 			node = Board(current_node.get_board(), current_node, 'down')
 			if node not in closed:
-				queue.append(node)
+				opened.append(node)
 		
-		closed.append(current_node)
-		print(current_node)
+
+		print(current_node, end='\n\n')
+		for o in opened:
+			print(o)
+			print()
+		print('======================')
+		
+		
+		best_node = get_best_f(opened) # Поиск эффективной ноды
+		queue.append(best_node) # Добавил в очередь эффективную ноду
+		closed.append(current_node) # добавил текущую ноду
+		closed.append(opened) # добавил плохие ноды
+		opened.clear() # очистка ноды
 		input()
 	
 
