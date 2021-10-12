@@ -7,6 +7,7 @@ class Board():
 		self.width = len(self.board[0]) # ширина
 		self.parent = new_parent
 		# self.action = new_action
+		self.heuristic = 0
 		self.h = 0
 		self.g = 0 if not new_parent else new_parent.g + 1
 		self.zero_x = -1 if not new_parent else new_parent.zero_x # координата пустой клетки по x
@@ -23,13 +24,14 @@ class Board():
 		return (self.width, self.height)
 
 	def get_h(self):
-		return self.h
+		return self.heuristic
+	
 
 	# def get_g(self):
 	# 	return self.g
 	
 	def get_f(self):
-		return self.g + self.h
+		return self.g + self.heuristic #+ self.h
 
 	def get_zero_x(self):
 		return self.zero_x
@@ -46,14 +48,20 @@ class Board():
 		for row in copy_board:
 			new_copy.append(list(row))
 		return new_copy
+	
+	def heuristical(self, x1, y1, x2, y2):
+		return abs(x1 - x2) + abs(y1 - y2)
 
 	def calculate_h(self):
 		for i in range(self.height):
 			for j in range(self.width):
 				if (self.board[i][j] != i * self.height + j + 1) and (self.board[i][j] != 0):
-					self.h += 1
+					self.h += 1 # ?
+					self.heuristic += self.heuristical(j, i, (self.board[i][j] - 1) % 3, (self.board[i][j] - 1) // 3)
 		if self.board[self.height - 1][self.width - 1] != 0:
 			self.h += 1
+
+	
 
 	def find_zero(self,):
 		if self.zero_x < 0 or self.zero_y < 0:
@@ -79,34 +87,11 @@ class Board():
 			board[y + 1][x], board[y][x] = board[y][x], board[y + 1][x]
 			self.zero_x, self.zero_y = self.zero_x, self.zero_y + 1
 
-
-	# def print_stats(self):
-	# 	self.print_board()
-	# 	print('\n\033[31m=================\033[0m')
-	# 	print("h =", self.h)
-	# 	print("g =", self.g)
-	# 	print("h =", self.h)
-	# 	print("f =", self.f)
-	# 	print("zero_x =", self.zero_x)
-	# 	print("zero_y =", self.zero_y)
-	# 	print(f"row = {row}, col = {col}")
-	# 	print('parent =', self.parent)
-	# 	print('\033[31m=================\033[0m')
-
 	def __eq__(self, eq_board) -> bool:
 		return self.board == eq_board
 
 	def __str__(self) -> str:
-		return '\n'.join(map(str, self.board)) + f'\tg = {self.g}, h = {self.h}, f = {self.get_f()}'
-
-def get_best_f(nodes : list):
-	min_node = nodes[0]
-	min = nodes[0].get_f()
-	for node in nodes:
-		if node.get_f() < min:
-			min_node = node
-			min = node.get_f()
-	return min_node
+		return '\n'.join(map(str, self.board)) + f'\tg = {self.g}, her = {self.heuristic}, f = {self.get_f()}'
 
 
 def print_queue(nodes, text):
@@ -116,6 +101,8 @@ def solver(board):
 	queue = deque()
 	closed = []
 	opened = []
+	path = []
+	her = []
 	queue.append(Board(board))
 	while len(queue) > 0:
 		#print_queue(queue, 'before sort:')
@@ -125,45 +112,72 @@ def solver(board):
 		# print(current_node)
 		if current_node.get_h() == 0:
 			break
+		
+		# НИЖНИЙ КУСОК КОДА ВЫНЕСТИ В КЛАСС
+		# for action in ('right', 'left', 'up', 'down'):
+		# 	node = Board(current_node.get_board(), current_node, action)
+		# 	if node not in closed:
+		# 		opened.append(node)
+
 		x, y = current_node.get_zero_coords()
 		w, h = current_node.get_board_sizes()
 
 		if x < w - 1: # Сдвиг вправо
 			node = Board(current_node.get_board(), current_node, 'right')
 			if node not in closed:
-				queue.append(node)
+				opened.append(node)
 		if x > 0: # Сдвиг влево
 			node = Board(current_node.get_board(), current_node, 'left')
 			if node not in closed:
-				queue.append(node)
+				opened.append(node)
 		if y > 0: # Сдвиг вверх
 			node = Board(current_node.get_board(), current_node, 'up')
 			if node not in closed:
-				queue.append(node)
+				opened.append(node)
 		if y < h - 1: # Сдвиг вниз
 			node = Board(current_node.get_board(), current_node, 'down')
 			if node not in closed:
-				queue.append(node)
+				opened.append(node)
 		
-
-		print(current_node, end='\n\n')
+		#print('CURRENT\n', current_node, end='\n\n')
 		# for o in opened:
 		# 	print(o)
 		# 	print()
 		# print('======================')
+		if len(path) == 0:
+			path.append(current_node) # добавляем самую первую ноду
+			print(current_node, '\n')
+		opened = sorted(opened, key=lambda n: n.get_f())
+		if len(opened) > 0:
+			node = opened.pop(0)
+			path.append(node) # добавляем в путь эффективную ноду
+			queue.append(node) # добавляем в очередь близкую ноду
+			#closed.append(opened) # добавил плохие ноды
+			opened.clear() # очистка ноды
+		closed.append(current_node)
 		
-		
-		#best_node = get_best_f(opened) # Поиск эффективной ноды
-		#queue.append(best_node) # Добавил в очередь эффективную ноду
-		closed.append(current_node) # добавил текущую ноду
-		#closed.append(opened) # добавил плохие ноды
-		#opened.clear() # очистка ноды
-		input()
+		her.append(current_node.get_h())
 	
+	#print("len:", len(queue))
+
+	# Просто сортируем путь по эвристике
+	her = sorted(path, key=lambda n : n.get_h())
+	# print('PATH:')
+	# for p in path:
+	# 	print(p)
+	# 	print()
+	# input()
+	print(her[0])
 
 		
 if __name__ == "__main__":
 	
+	# board = [
+	# 		[1, 2, 4, 0],
+	# 		[12, 13, 3, 5],
+	# 		[11, 9, 14, 6],
+	# 		[10, 8, 15, 7]
+	# 		]
 	board = [
 			[1, 2, 7],
 			[3, 4, 6],
