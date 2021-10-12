@@ -108,12 +108,19 @@ def get_best_f(nodes : list):
 			min = node.get_f()
 	return min_node
 
+
+def print_queue(nodes, text):
+	print('[', text, *[node.get_f() for node in nodes], ']', sep=' ')
+
 def solver(board):
 	queue = deque()
 	closed = []
 	opened = []
 	queue.append(Board(board))
 	while len(queue) > 0:
+		#print_queue(queue, 'before sort:')
+		queue = sorted(queue, key=lambda n: n.get_f())
+		#print_queue(queue, 'after sort :')
 		current_node = queue.pop()
 		# print(current_node)
 		if current_node.get_h() == 0:
@@ -124,33 +131,33 @@ def solver(board):
 		if x < w - 1: # Сдвиг вправо
 			node = Board(current_node.get_board(), current_node, 'right')
 			if node not in closed:
-				opened.append(node)
+				queue.append(node)
 		if x > 0: # Сдвиг влево
 			node = Board(current_node.get_board(), current_node, 'left')
 			if node not in closed:
-				opened.append(node)
+				queue.append(node)
 		if y > 0: # Сдвиг вверх
 			node = Board(current_node.get_board(), current_node, 'up')
 			if node not in closed:
-				opened.append(node)
+				queue.append(node)
 		if y < h - 1: # Сдвиг вниз
 			node = Board(current_node.get_board(), current_node, 'down')
 			if node not in closed:
-				opened.append(node)
+				queue.append(node)
 		
 
 		print(current_node, end='\n\n')
-		for o in opened:
-			print(o)
-			print()
-		print('======================')
+		# for o in opened:
+		# 	print(o)
+		# 	print()
+		# print('======================')
 		
 		
-		best_node = get_best_f(opened) # Поиск эффективной ноды
-		queue.append(best_node) # Добавил в очередь эффективную ноду
+		#best_node = get_best_f(opened) # Поиск эффективной ноды
+		#queue.append(best_node) # Добавил в очередь эффективную ноду
 		closed.append(current_node) # добавил текущую ноду
-		closed.append(opened) # добавил плохие ноды
-		opened.clear() # очистка ноды
+		#closed.append(opened) # добавил плохие ноды
+		#opened.clear() # очистка ноды
 		input()
 	
 
