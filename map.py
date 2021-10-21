@@ -1,6 +1,6 @@
 from heapq import *
 
-def find_childrens(board, curent, goal):
+def find_childrens(board, curent):
 	childrens = []
 	moves = [
 		[-1, 0], # left
@@ -38,7 +38,7 @@ def dijkstra(start, goal, graph):
 		if cur_node[1] == goal:
 			break
         
-		next_nodes = find_childrens(graph, cur_node, goal)
+		next_nodes = find_childrens(graph, cur_node)
 		#print(cur_node, '->', next_nodes)
 		#input()
 		for next_node in next_nodes:
@@ -79,6 +79,7 @@ if __name__ == "__main__":
 			[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 			]
 
+	
 	# start = (2, 1)
 	# goal = (2, 5)
 	# graph = [
