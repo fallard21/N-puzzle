@@ -17,8 +17,9 @@ class Node:
 		w = int(sqrt(size))
 		if not self.h:
 			for i in range(size):
-				if array[i] != i + 1 and array[i] != 0:
-					self.h += heuristic((i % w, (board[i] - 1) % w), (i // w, (board[i] - 1) // w))
+				#test = array[i]
+				if array[i] != i + 1 and array[i] != 0: #and (i < w or i % w < 2):
+					self.h += heuristic((i % w, i // w), ((array[i] - 1) % w, (array[i] - 1) // w))
 		return self.h
 
 	def set_priority(self, new_f):
@@ -105,7 +106,8 @@ def solver(start, goal, board):
 
 	while queue:
 		cur_node = heappop(queue)
-		if cur_node[1] == goal:
+		#if cur_node[1] == goal:
+		if cur_node[1].get_heuristic() == 0:
 			print('SOLVED:')
 			print(cur_node[1])
 			break
@@ -140,6 +142,12 @@ if __name__ == "__main__":
 			10, 8, 15, 7
 			]
 	
+	# board = [
+	# 		1, 2, 3, 4,
+	# 		0, 11, 14, 5,
+	# 		9, 12, 15, 6,
+	# 		13, 10, 8, 7
+	# 		]
 	
 	# board = [
 	# 		1, 2, 7, 
@@ -151,9 +159,9 @@ if __name__ == "__main__":
 	goal = Node(make_goal(len(board)))
 	start = Node(board)
 	end = solver(start, goal, board)
-	
+	print(len(end))
 	# PATH
-	cur_node = goal
-	while cur_node != start:
-		cur_node = end[cur_node]
-		print(cur_node)
+	# cur_node = goal
+	# while cur_node != start:
+	# 	cur_node = end[cur_node]
+	# 	print(cur_node)
