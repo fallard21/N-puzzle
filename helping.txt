@@ -19,3 +19,5 @@ https://habr.com/ru/post/331220/
 
 http://theory.stanford.edu/~amitp/GameProgramming/
 
+https://algorithmsinsight.wordpress.com/graph-theory-2/a-star-in-general/implementing-a-star-to-solve-n-puzzle/
+https://algorithmsinsight.wordpress.com/graph-theory-2/a-star-in-general/
