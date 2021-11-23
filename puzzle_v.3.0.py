@@ -46,7 +46,7 @@ class Node():
 		#size = len(self.state)
 		#w = int(sqrt(size))
 		s = ''
-		for i in range(size):
+		for i in range(self.size):
 			if i % self.w == 0 and i != 0:
 				s += '\n'
 			s += '%-3d' % self.state[i]
@@ -145,7 +145,7 @@ def get_board() -> tuple:
 
 
 if __name__ == "__main__":
-	size, board = get_board()
+	#size, board = get_board()
 	board = [
 			17, 16, 2, 6, 19,
 			1, 0, 3, 18, 5,
@@ -176,8 +176,9 @@ if __name__ == "__main__":
 	
 	#end = solver(start, goal, board)
 	#print(len(end))
-	# PATH
-	# cur_node = goal
-	# while cur_node != start:
-	# 	cur_node = end[cur_node]
-	# 	print(cur_node)
+	#PATH
+	cur_node = goal
+	print(goal)
+	while cur_node != start:
+		cur_node = end[cur_node]
+		print(cur_node)
