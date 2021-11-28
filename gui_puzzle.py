@@ -45,6 +45,10 @@ def init_pygame(size : int):
 	global START_X
 	global START_Y 
 
+	if size not in (N_SIZES):
+		print('Error. GUI not support this size:', size)
+		exit()
+
 	SCREEN = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 	pg.display.set_caption("n-puzzle")
 	
@@ -75,30 +79,32 @@ def draw_text(text, font_name, font_size, color, rect : tuple):
 def get_click_mouse_pos():
 	x, y = pg.mouse.get_pos()
 	grid_x, grid_y = (x - START_X) // TILE, (y - START_Y) // TILE
-	print((grid_x, grid_y), START_X, START_Y)
+	#print((grid_x, grid_y), START_X, START_Y)
 	#pg.draw.rect(sc, pg.Color('red'), get_rect(grid_x, grid_y))
 	click = pg.mouse.get_pressed()
-	print(x, y)
+	#print(x, y)
 	if grid_x < 0 or grid_x > N - 1 or grid_y > N - 1 or grid_y < 0:
 		return False
 	return (grid_x, grid_y) if click[0] else False
 
 
-def updateWin():
+def updateWin(board):
 	SCREEN.blit(BG, (0, 0))
-
+	#print(board)
 	draw_text('N-Puzzle', 'arial', 90, 'black', (SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT * 0.0001))
-	
+
 	[[SCREEN.blit(BG_TILE, get_rect(x, y)) for x in range(N)] for y in range(N)]
 	[[pg.draw.rect(SCREEN, pg.Color('black'), get_rect(x, y), 5, border_radius=TILE // 10) for x in range(N)] for y in range(N)]
 
-	for n in range(N * N):
-		if n:
+	for n, value in enumerate(board):
+		if value:
 			x, y, w, h = get_rect(n % N, n // N)
-			if n < 10:
-				draw_text(str(n), 'arial', FONT_SIZE, 'black', (x + TILE // 3, y + TILE // 5, w, h))
+			if value and value < 10:
+				draw_text(str(value), 'arial', FONT_SIZE, 'black', (x + TILE // 3, y + TILE // 5, w, h))
+				pass
 			else:
-				draw_text(str(n), 'arial', FONT_SIZE, 'black', (x + TILE // 5, y + TILE // 5, w, h))
+				draw_text(str(value), 'arial', FONT_SIZE, 'black', (x + TILE // 5, y + TILE // 5, w, h))
+				pass
 
 	pos = get_click_mouse_pos()
 	if pos:
@@ -111,20 +117,29 @@ def updateWin():
 	pg.display.flip()
 
 
-def game():
-	init_pygame(4)
+
+def game(path : list, start : list, w : int):
+	init_pygame(w)
 	clock = pg.time.Clock()
+	step = 0
 	running = True
 	while running:
 		clock.tick(FPS)
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				running = False
-		keys = pg.key.get_pressed()
-		if keys[pg.K_ESCAPE]:
-			running = False
+			elif event.type == pg.KEYDOWN:
+				keys = pg.key.get_pressed()
+				if event.key == pg.K_RIGHT and keys[pg.K_RIGHT]:
+					if step < len(path) - 1:
+						step += 1
+				elif event.key == pg.K_LEFT and keys[pg.K_LEFT]:
+					if step > 0:
+						step -= 1
+				elif keys[pg.K_ESCAPE]:
+					running = False
 		
-		updateWin()
+		start = path[step].state
+		updateWin(start)
 
 	pg.quit()
-

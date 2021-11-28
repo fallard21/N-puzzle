@@ -66,7 +66,7 @@ class Solver():
 		self.goal = Node(goal)
 		self.closed = {self.start : None}
 
-	def new_Astar(self):
+	def Astar(self):
 		heappush(self.queue, self.start)
 		while self.queue:
 			current_node = heappop(self.queue)
@@ -80,11 +80,15 @@ class Solver():
 					self.closed[node] = current_node
 
 	def get_path(self):
+		path = []
 		cur_node = self.goal
-		print(self.goal)
+		path.append(self.goal)
+		#print(self.goal)
 		while cur_node != self.start:
 			cur_node = self.closed[cur_node]
-			print(cur_node)
+			#print(cur_node)
+			path.append(cur_node)
+		return path[::-1]
 
 
 def manhattan(arr : list, size, w):
@@ -135,14 +139,12 @@ if __name__ == "__main__":
 		print('Error. Puzzle not solvable')
 		exit()
 
-	if args.v:
-		game()
-
-
-
 	s = Solver(start, goal)
-	end = s.new_Astar()
-	#s.get_path()
+	s.Astar()
+	path = s.get_path()
+
+	if args.v:
+		game(path, start, int(sqrt(len(start))))
 
 # Если -u и size - нечетное -> РЕШАЕТСЯ
 # Если -s и size - четное -> НЕ РЕШАЕТСЯ
