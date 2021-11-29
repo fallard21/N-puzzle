@@ -1,20 +1,16 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
+
 import pygame as pg
-from time import sleep
-
-SCREEN = 0
-BG = 0
-BG_TILE = 0
-N = 0
-TILE = 0
-FONT_SIZE = 0
-
-
-START_X = 0
-START_Y = 0
+#from time import sleep
 
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 800
 FPS = 30
+SPEED = 5
+
+N_SIZES = (3, 4, 5, 6, 7)
+TILES = (180, 150, 120, 100, 90)
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -22,124 +18,109 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-N_SIZES = (3, 4, 5, 6, 7)
-TILES = (180, 150, 120, 100, 90)
-
-
-SPEED = 5
-
 BG_IMG = 'resources/bg_2.jpg'
 BG_TILE_IMG = 'resources/quad_5_r.png'
 FONT = 'arial'
 
 
-def init_pygame(size : int):
-	pg.init()
+class GuiPuzzle():
+	screen = None
+	bg = None
+	bg_tile = 0
+	tile = 0
+	font_size = 0
+	start_x = 0
+	start_y = 0
+	w = 0
 
-	global SCREEN
-	global BG
-	global BG_TILE
-	global TILE
-	global N
-	global FONT_SIZE
-	global START_X
-	global START_Y 
-
-	if size not in (N_SIZES):
-		print('Error. GUI not support this size:', size)
-		exit()
-
-	SCREEN = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-	pg.display.set_caption("n-puzzle")
-	
-	N = size
-	TILE = TILES[N_SIZES.index(size)]
-	FONT_SIZE = TILE // 2
-
-	START_X = (SCREEN_WIDTH - ((TILE - 5) * N + (N - 1) * 5)) // 2
-	START_Y = int((SCREEN_HEIGHT - ((TILE - 5) * N + (N - 1) * 5)) // 1.4)
-
-	BG = pg.image.load(BG_IMG)
-	BG = pg.transform.scale(BG, (SCREEN_WIDTH, SCREEN_HEIGHT))
-	BG_TILE = pg.image.load(BG_TILE_IMG)
-	BG_TILE = pg.transform.scale(BG_TILE, (TILE - 5, TILE - 5))
-	#font = pg.font.SysFont(FONT, FONT_SIZE)
-
-
-def get_rect(x, y):
-	return x * TILE + START_X, y * TILE + START_Y, TILE - 5, TILE - 5
-
-
-def draw_text(text, font_name, font_size, color, rect : tuple):
-	font = pg.font.SysFont(font_name, font_size)
-	f = font.render(text, True, pg.Color(color))
-	SCREEN.blit(f, rect)
-
-
-def get_click_mouse_pos():
-	x, y = pg.mouse.get_pos()
-	grid_x, grid_y = (x - START_X) // TILE, (y - START_Y) // TILE
-	#print((grid_x, grid_y), START_X, START_Y)
-	#pg.draw.rect(sc, pg.Color('red'), get_rect(grid_x, grid_y))
-	click = pg.mouse.get_pressed()
-	#print(x, y)
-	if grid_x < 0 or grid_x > N - 1 or grid_y > N - 1 or grid_y < 0:
-		return False
-	return (grid_x, grid_y) if click[0] else False
-
-
-def updateWin(board):
-	SCREEN.blit(BG, (0, 0))
-	#print(board)
-	draw_text('N-Puzzle', 'arial', 90, 'black', (SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT * 0.0001))
-
-	[[SCREEN.blit(BG_TILE, get_rect(x, y)) for x in range(N)] for y in range(N)]
-	[[pg.draw.rect(SCREEN, pg.Color('black'), get_rect(x, y), 5, border_radius=TILE // 10) for x in range(N)] for y in range(N)]
-
-	for n, value in enumerate(board):
-		if value:
-			x, y, w, h = get_rect(n % N, n // N)
-			if value and value < 10:
-				draw_text(str(value), 'arial', FONT_SIZE, 'black', (x + TILE // 3, y + TILE // 5, w, h))
-				pass
-			else:
-				draw_text(str(value), 'arial', FONT_SIZE, 'black', (x + TILE // 5, y + TILE // 5, w, h))
-				pass
-
-	pos = get_click_mouse_pos()
-	if pos:
-		s = pg.Surface((TILE - 15, TILE - 15))
-		s.set_alpha(180)
-		s.fill(BLACK)
-		#pg.draw.rect(screen, pg.Color('black'), get_rect(pos[0], pos[1]), border_radius=TILE//10)
-		x, y, w, h = get_rect(pos[0], pos[1])
-		SCREEN.blit(s, (x + 5, y + 5, w, h))
-	pg.display.flip()
-
-
-
-def game(path : list, start : list, w : int):
-	init_pygame(w)
-	clock = pg.time.Clock()
+	current_state = None
 	step = 0
-	running = True
-	while running:
-		clock.tick(FPS)
-		for event in pg.event.get():
-			if event.type == pg.QUIT:
-				running = False
-			elif event.type == pg.KEYDOWN:
-				keys = pg.key.get_pressed()
-				if event.key == pg.K_RIGHT and keys[pg.K_RIGHT]:
-					if step < len(path) - 1:
-						step += 1
-				elif event.key == pg.K_LEFT and keys[pg.K_LEFT]:
-					if step > 0:
-						step -= 1
-				elif keys[pg.K_ESCAPE]:
-					running = False
-		
-		start = path[step].state
-		updateWin(start)
+	path = []
 
-	pg.quit()
+	def _init_gui(self, path : list, w : int):
+		pg.init()
+		if w not in (N_SIZES):
+			raise Exception
+		self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+		pg.display.set_caption("N-puzzle")
+		self.w = w
+		self.path = path
+		self.tile = TILES[N_SIZES.index(self.w)]
+		self.font_size = self.tile // 2
+		self.start_x = (SCREEN_WIDTH - ((self.tile - 5) * self.w + (self.w - 1) * 5)) // 2
+		self.start_y = int((SCREEN_HEIGHT - ((self.tile - 5) * self.w + (self.w - 1) * 5)) // 1.4)
+		#self.font = font = pg.font.SysFont(FONT, self.font_size)
+		self.bg = pg.image.load(BG_IMG)
+		self.bg = pg.transform.scale(self.bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
+		self.bg_tile = pg.image.load(BG_TILE_IMG)
+		self.bg_tile = pg.transform.scale(self.bg_tile, (self.tile - 5, self.tile - 5))
+
+	def run(self, path, w):
+		self._init_gui(path, w)
+		clock = pg.time.Clock()
+		step = 0
+		running = True
+		while running:
+			clock.tick(FPS)
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					running = False
+				elif event.type == pg.KEYDOWN:
+					keys = pg.key.get_pressed()
+					if event.key == pg.K_RIGHT and keys[pg.K_RIGHT]:
+						if step < len(path) - 1:
+							step += 1
+					elif event.key == pg.K_LEFT and keys[pg.K_LEFT]:
+						if step > 0:
+							step -= 1
+					elif keys[pg.K_ESCAPE]:
+						running = False
+			self.current_state = self.path[step].state
+			self._updateWin()
+		pg.quit()
+
+	def _get_rect(self, x, y):
+		return x * self.tile + self.start_x, y * self.tile + self.start_y, self.tile - 5, self.tile - 5
+
+	def _draw_text(self, text, fname, fsize, color, rect : tuple):
+		font = pg.font.SysFont(fname, fsize)
+		text_surface = font.render(text, True, pg.Color(color))
+		self.screen.blit(text_surface, rect)
+
+	def _get_click_mouse_pos(self):
+		x, y = pg.mouse.get_pos()
+		grid_x, grid_y = (x - self.start_x) // self.tile, (y - self.start_y) // self.tile
+		click = pg.mouse.get_pressed()
+		if grid_x < 0 or grid_x > self.w - 1 or grid_y > self.w - 1 or grid_y < 0:
+			return False
+		return (grid_x, grid_y) if click[0] else False
+
+	def _updateWin(self):
+		self.screen.blit(self.bg, (0, 0))
+		self._draw_text('N-Puzzle', 'arial', 90, 'black', (SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT * 0.0001))
+
+		[[self.screen.blit(self.bg_tile, self._get_rect(x, y)) for x in range(self.w)] for y in range(self.w)]
+		[[pg.draw.rect(self.screen, pg.Color('black'), self._get_rect(x, y), 5, border_radius=self.tile // 10) 
+			for x in range(self.w)] for y in range(self.w)]
+
+		for n, value in enumerate(self.current_state):
+			if value:
+				x, y, w, h = self._get_rect(n % self.w, n // self.w)
+				x = x + self.tile // 3 if value < 10 else x + self.tile // 5
+				if value:
+					self._draw_text(
+						str(value), 
+						'arial', 
+						self.font_size, 
+						'black', 
+						(x, y + self.tile // 5, w, h))
+					
+		pos = self._get_click_mouse_pos()
+		if pos:
+			s = pg.Surface((self.tile - 15, self.tile - 15))
+			s.set_alpha(180)
+			s.fill(BLACK)
+			#pg.draw.rect(screen, pg.Color('black'), get_rect(pos[0], pos[1]), border_radius=TILE//10)
+			x, y, w, h = self._get_rect(pos[0], pos[1])
+			self.screen.blit(s, (x + 5, y + 5, w, h))
+		pg.display.flip()

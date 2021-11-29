@@ -1,9 +1,10 @@
 from heapq import *
 from math import sqrt
 from sys import exit
-from parser import get_board
+from parser import PuzzleError, load_puzzle
 from argparse import ArgumentParser
 from gui_puzzle import *
+
 
 class Node():
 	def __init__(self, new_state):
@@ -13,7 +14,7 @@ class Node():
 		self.h = manhattan(self.state, self.size, self.w)
 		self.g = 0
 		self.f = self.g + self.h
-		self.parent = 0
+		#self.parent = 0
 
 	def __repr__(self) -> str:
 		return str(self.state)
@@ -42,7 +43,7 @@ class Node():
 				-self.w,		# up     [-3]
 				1,			# right   [1]
 				self.w]		# down     [3]
-		
+
 		for m in moves:
 			pos = zero + m
 			if ((pos % self.w > zero % self.w and pos // self.w < zero // self.w) or
@@ -59,14 +60,14 @@ class Node():
 		return neighbors
 
 
-class Solver():
+class PuzzleSolver():
 	def __init__(self, start, goal):
 		self.queue = []
 		self.start = Node(start)
 		self.goal = Node(goal)
 		self.closed = {self.start : None}
 
-	def Astar(self):
+	def run_Astar(self):
 		heappush(self.queue, self.start)
 		while self.queue:
 			current_node = heappop(self.queue)
@@ -113,7 +114,7 @@ def is_solvable(start : list, goal : list, size : int):
 			vj = start[j]
 			if goal.index(vi) > goal.index(vj):
 				res += 1
-	
+
 	w = int(sqrt(size))
 	start_x = start.index(0) % w
 	start_y = start.index(0) // w
@@ -121,7 +122,9 @@ def is_solvable(start : list, goal : list, size : int):
 	goal_y = goal.index(0) // w
 	h = abs(start_x - goal_x) + abs(start_y - goal_y)
 	#print('2 res:', res, ' h:', h)
-	return False if (res + h) & 1 else True
+	if (res + h) & 1:
+		raise PuzzleError(msg="Puzzle not solvable")
+	#return False if (res + h) & 1 else True
 
 
 if __name__ == "__main__":
@@ -132,19 +135,24 @@ if __name__ == "__main__":
 		help="Select heuristic (1 - manhattan, 2 - text1, 3 - text2)")
 	parser.add_argument("-v", action='store_true', help="Run program with GUI")
 	args = parser.parse_args()
-	start = get_board(args.filename)
-	goal = make_goal(len(start))
 
-	if not is_solvable(start, goal, len(start)):
-		print('Error. Puzzle not solvable')
+	try:
+		start = load_puzzle(args.filename)
+		goal = make_goal(len(start))
+		is_solvable(start, goal, len(start))
+	except PuzzleError as pe:
+		print(pe.err_msg)
 		exit()
 
-	s = Solver(start, goal)
-	s.Astar()
-	path = s.get_path()
+	solver = PuzzleSolver(start, goal)
+	solver.run_Astar()
+	path = solver.get_path()
 
 	if args.v:
-		game(path, start, int(sqrt(len(start))))
+		gui = GuiPuzzle()
+		gui.run(path, int(sqrt(len(start))))
+
+		#game(path, start, int(sqrt(len(start))))
 
 # Если -u и size - нечетное -> РЕШАЕТСЯ
 # Если -s и size - четное -> НЕ РЕШАЕТСЯ
