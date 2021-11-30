@@ -81,6 +81,11 @@ class GuiPuzzle():
 							self.step -= 1
 					elif keys[pg.K_ESCAPE]:
 						running = False
+			## fast scroll
+			# keys = pg.key.get_pressed()
+			# if keys[pg.K_RIGHT] and self.step < len(path) - 1:
+			# 	self.step += 1
+
 			self.current_state = self.path[self.step].state
 			self._updateWin()
 		pg.quit()

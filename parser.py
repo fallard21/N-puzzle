@@ -27,4 +27,23 @@ def load_puzzle(filename : str) -> tuple:
 	check = [n < size * size and n >= 0 for n in array]
 	if size < 1 or len(array) != size ** 2 or False in check or len(array) != len(set(array)):
 		raise PuzzleError(msg='invalid puzzle input')
-	return array
+	return size, array
+
+
+def is_solvable(start : list, goal : list, size : int):
+	res = 0
+	for i in range(size * size):
+		vi = start[i]
+		for j in range(i, size * size):
+			vj = start[j]
+			if goal.index(vi) > goal.index(vj):
+				res += 1
+	#w = int(sqrt(size))
+	start_x = start.index(0) % size
+	start_y = start.index(0) // size
+	goal_x = goal.index(0) % size
+	goal_y = goal.index(0) // size
+	h = abs(start_x - goal_x) + abs(start_y - goal_y)
+	#print('2 res:', res, ' h:', h)
+	if (res + h) & 1:
+		raise PuzzleError(msg="Puzzle not solvable")

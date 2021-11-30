@@ -1,17 +1,18 @@
 from heapq import *
 from math import sqrt
 from sys import exit
-from parser import PuzzleError, load_puzzle
+from parser import PuzzleError, load_puzzle, is_solvable
 from argparse import ArgumentParser
 from gui_puzzle import *
 
+tgoal = None ## TEMP TO DELETE
 
 class Node():
 	def __init__(self, new_state):
 		self.state = tuple(new_state)
 		self.size = len(self.state)
 		self.w = int(sqrt(self.size))
-		self.h = manhattan(self.state, self.size, self.w)
+		self.h = manhattan(self.state, tgoal, self.w)
 		self.g = 0
 		self.f = self.g + self.h
 		#self.parent = 0
@@ -55,7 +56,7 @@ class Node():
 			state[pos], state[zero] = state[zero], state[pos]
 			node = Node(state)
 			node.g = self.g + 1
-			node.parent = self
+			#node.parent = self
 			neighbors.append(node)
 		return neighbors
 
@@ -68,15 +69,17 @@ class PuzzleSolver():
 		self.closed = {self.start : None}
 
 	def run_Astar(self):
+		#self.start.h = manhattan(self.start.state, self.goal.state, self.start.w)
 		heappush(self.queue, self.start)
 		while self.queue:
 			current_node = heappop(self.queue)
 			if current_node == self.goal:
-				print('SOLVED')
+				print('SOLVED') # TMP
 				break
 			next_nodes = current_node.neighbors()
 			for node in next_nodes:
 				if node not in self.closed:
+					#node.h = manhattan(node.state, self.goal.state, node.w)
 					heappush(self.queue, node)
 					self.closed[node] = current_node
 
@@ -92,39 +95,32 @@ class PuzzleSolver():
 		return path[::-1]
 
 
-def manhattan(arr : list, size, w):
+def manhattan(state : list, goal : list, size):
 	h = 0
-	for i in range(size):
-		if arr[i] != i + 1 and arr[i] != 0:
-			h += abs(i % w - (arr[i] - 1) % w) + abs(i // w - (arr[i] - 1) // w)
+	for i in range(size * size):
+		if state[i] and state[i] != goal[i]:
+			k = goal.index(state[i])
+			#gx, gy = k % size, k // size
+			#x, y = k % size, k // size
+			h += abs(i % size - k % size) + abs(i % size - k // size)
 	return h
 
 
 def make_goal(size):
-	arr = [i + 1 for i in range(size)]
-	arr[-1] = 0
-	return arr
-
-
-def is_solvable(start : list, goal : list, size : int):
-	res = 0
-	for i in range(size):
-		vi = start[i]
-		for j in range(i, size):
-			vj = start[j]
-			if goal.index(vi) > goal.index(vj):
-				res += 1
-
-	w = int(sqrt(size))
-	start_x = start.index(0) % w
-	start_y = start.index(0) // w
-	goal_x = goal.index(0) % w
-	goal_y = goal.index(0) // w
-	h = abs(start_x - goal_x) + abs(start_y - goal_y)
-	#print('2 res:', res, ' h:', h)
-	if (res + h) & 1:
-		raise PuzzleError(msg="Puzzle not solvable")
-	#return False if (res + h) & 1 else True
+	arr = [[0] * size for _ in range(size)]
+	dx, dy = [0, 1, 0, -1], [1, 0, -1, 0]
+	x, y, c = 0, -1, 1
+	for i in range(size + size - 1):
+		for _ in range((size + size - i) // 2):
+			x += dx[i % 4]
+			y += dy[i % 4]
+			arr[x][y] = c
+			c += 1
+	res = []
+	for k in arr:
+		res.extend(k)
+	res[res.index(size * size)] = 0
+	return res
 
 
 if __name__ == "__main__":
@@ -136,10 +132,13 @@ if __name__ == "__main__":
 	parser.add_argument("-v", action='store_true', help="Run program with GUI")
 	args = parser.parse_args()
 
+
+	tgoal = make_goal(4) # NEED FIX THAT !!
 	try:
-		start = load_puzzle(args.filename)
-		goal = make_goal(len(start))
-		is_solvable(start, goal, len(start))
+		
+		size, start = load_puzzle(args.filename)
+		goal = make_goal(size)
+		is_solvable(start, goal, size)
 	except PuzzleError as pe:
 		print(pe.err_msg)
 		exit()
@@ -152,7 +151,7 @@ if __name__ == "__main__":
 		gui = GuiPuzzle()
 		gui.run(path, int(sqrt(len(start))))
 
-		#game(path, start, int(sqrt(len(start))))
+	# game(path, start, int(sqrt(len(start))))
 
 # Если -u и size - нечетное -> РЕШАЕТСЯ
 # Если -s и size - четное -> НЕ РЕШАЕТСЯ
