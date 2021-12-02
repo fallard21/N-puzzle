@@ -1,29 +1,20 @@
 import os
-import parser
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 import pygame as pg
-#from common import PuzzleError
 
 
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 800
 FPS = 30
-SPEED = 5
+#SPEED = 5
 MAX_STEP = 29
 
 N_SIZES = (3, 4, 5, 6, 7)
 TILES = (180, 140, 110, 100, 80)
 
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-
 BG_IMG = 'resources/bg_2.jpg'
 LOGO = 'resources/logo.png'
 BG_TILE_IMG = 'resources/quad_5_r.png'
-#FONT = 'arial'
 
 
 class GuiPuzzle():
@@ -42,24 +33,25 @@ class GuiPuzzle():
 	step = 0
 	
 	def _init_gui(self, path : list, w : int):
-		pg.init()
-		# if w not in (N_SIZES):
-		# 	raise PuzzleError(msg=f'GUI support only {N_SIZES} sizes')
-		self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-		pg.display.set_caption("N-puzzle")
-		self.w = w
-		self.path = path
-		self.tile = TILES[N_SIZES.index(self.w)]
-		self.font_size = self.tile // 2
-		self.start_x = (SCREEN_WIDTH - ((self.tile - 5) * self.w + (self.w - 1) * 5)) // 2
-		self.start_y = int((SCREEN_HEIGHT - ((self.tile - 5) * self.w + (self.w - 1) * 5)) // 1.6)
-		#self.font = font = pg.font.SysFont(FONT, self.font_size)
-		self.logo = pg.image.load(LOGO)
-		self.logo = pg.transform.scale(self.logo, (self.logo.get_width() // 3.1, self.logo.get_height() // 3.1))
-		self.bg = pg.image.load(BG_IMG)
-		self.bg = pg.transform.scale(self.bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
-		self.bg_tile = pg.image.load(BG_TILE_IMG)
-		self.bg_tile = pg.transform.scale(self.bg_tile, (self.tile - 5, self.tile - 5))
+		try:
+			pg.init()
+			self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+			pg.display.set_caption("N-puzzle")
+			self.w = w
+			self.path = path
+			self.tile = TILES[N_SIZES.index(self.w)]
+			self.font_size = self.tile // 2
+			self.start_x = (SCREEN_WIDTH - ((self.tile - 5) * self.w + (self.w - 1) * 5)) // 2
+			self.start_y = int((SCREEN_HEIGHT - ((self.tile - 5) * self.w + (self.w - 1) * 5)) // 1.6)
+			self.logo = pg.image.load(LOGO)
+			self.logo = pg.transform.scale(self.logo, (self.logo.get_width() // 3.1, self.logo.get_height() // 3.1))
+			self.bg = pg.image.load(BG_IMG)
+			self.bg = pg.transform.scale(self.bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
+			self.bg_tile = pg.image.load(BG_TILE_IMG)
+			self.bg_tile = pg.transform.scale(self.bg_tile, (self.tile - 5, self.tile - 5))
+		except FileNotFoundError as e:
+			print(e)
+			exit(1)
 
 	def run(self, path, w):
 		self._init_gui(path, w)
@@ -70,32 +62,32 @@ class GuiPuzzle():
 			for event in pg.event.get():
 				if event.type == pg.QUIT:
 					running = False
-				elif event.key == pg.K_ESCAPE:
-					running = False
-			self._move_tile(event, path)
+				elif event.type == pg.KEYDOWN:
+					if event.key == pg.K_ESCAPE:
+						running = False
+					self._move_tile(event, path)
 			self._updateWin()
 		pg.quit()
 
 	def _move_tile(self, event, path):
-		if event.type == pg.KEYDOWN:
-			if event.key == pg.K_RIGHT:
-				if self.current_step < len(path) - 1:
-					if self.current_step + 1 + self.step > len(path) - 1:
-						self.current_step = len(path) - 1
-					else:
-						self.current_step += 1 + self.step
-			elif event.key == pg.K_LEFT:
-				if self.current_step > 0:
-					if self.current_step - 1 - self.step < 0:
-						self.current_step = 0
-					else:
-						self.current_step -= 1 + self.step
-			elif event.key == pg.K_UP:
-				if self.step < MAX_STEP:
-					self.step += 1
-			elif event.key == pg.K_DOWN:
-				if self.step > 0:
-					self.step -= 1
+		if event.key == pg.K_RIGHT:
+			if self.current_step < len(path) - 1:
+				if self.current_step + 1 + self.step > len(path) - 1:
+					self.current_step = len(path) - 1
+				else:
+					self.current_step += 1 + self.step
+		elif event.key == pg.K_LEFT:
+			if self.current_step > 0:
+				if self.current_step - 1 - self.step < 0:
+					self.current_step = 0
+				else:
+					self.current_step -= 1 + self.step
+		elif event.key == pg.K_UP:
+			if self.step < MAX_STEP:
+				self.step += 1
+		elif event.key == pg.K_DOWN:
+			if self.step > 0:
+				self.step -= 1
 
 	def _get_rect(self, x, y):
 		return x * self.tile + self.start_x, y * self.tile + self.start_y, self.tile - 5, self.tile - 5
@@ -140,10 +132,9 @@ class GuiPuzzle():
 					
 		pos = self._get_click_mouse_pos()
 		if pos:
-			s = pg.Surface((self.tile - 15, self.tile - 15))
-			s.set_alpha(180)
-			s.fill(BLACK)
-			#pg.draw.rect(screen, pg.Color('black'), get_rect(pos[0], pos[1]), border_radius=TILE//10)
+			tile = pg.Surface((self.tile - 15, self.tile - 15))
+			tile.set_alpha(180)
+			tile.fill(pg.Color('black'))
 			x, y, w, h = self._get_rect(pos[0], pos[1])
-			self.screen.blit(s, (x + 5, y + 5, w, h))
+			self.screen.blit(tile, (x + 5, y + 5, w, h))
 		pg.display.flip()
