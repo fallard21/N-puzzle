@@ -33,7 +33,7 @@ class Node():
 			s += '%-3d' % self.state[i]
 		return s + '\n'
 
-	def __lt__(self, eq : 'Node'):
+	def __lt__(self, eq : 'Node') -> bool:
 	 	return self.f < eq.f
 
 	def __hash__(self) -> int:
@@ -42,7 +42,7 @@ class Node():
 	def __eq__(self, eq : 'Node') -> bool:
 		return self.state == eq.state
 
-	def neighbors(self, goal):
+	def neighbors(self, goal) -> list:
 		neighbors = []
 		zero = self.state.index(0)
 		moves = [-1,		# left   [-1]
@@ -89,7 +89,7 @@ class PuzzleSolver():
 			#print([q.f for q in self.queue])
 			#input()
 
-	def get_path(self):
+	def get_path(self) -> list:
 		path = []
 		cur_node = self.goal
 		path.append(self.goal)

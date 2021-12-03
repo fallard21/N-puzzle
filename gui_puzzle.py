@@ -89,7 +89,7 @@ class GuiPuzzle():
 			if self.step > 0:
 				self.step -= 1
 
-	def _get_rect(self, x, y):
+	def _get_rect(self, x, y) -> tuple:
 		return x * self.tile + self.start_x, y * self.tile + self.start_y, self.tile - 5, self.tile - 5
 
 	def _draw_text(self, text, fname, fsize, color, rect : tuple):
