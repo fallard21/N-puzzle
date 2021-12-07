@@ -32,13 +32,16 @@ class GuiPuzzle():
 	current_step = 0
 	step = 0
 	
-	def _init_gui(self, path : list, w : int):
+	def __init__(self, path, size, freemode=False):
+		self.path = path
+		self.w = size
+		self.freemode = freemode
+
+	def _init_gui(self):
 		try:
 			pg.init()
 			self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 			pg.display.set_caption("N-puzzle")
-			self.w = w
-			self.path = path
 			self.tile = TILES[N_SIZES.index(self.w)]
 			self.font_size = self.tile // 2
 			self.start_x = (SCREEN_WIDTH - ((self.tile - 5) * self.w + (self.w - 1) * 5)) // 2
@@ -53,8 +56,8 @@ class GuiPuzzle():
 			print(e)
 			exit(1)
 
-	def run(self, path, w):
-		self._init_gui(path, w)
+	def run(self):
+		self._init_gui()
 		clock = pg.time.Clock()
 		running = True
 		while running:
@@ -65,7 +68,7 @@ class GuiPuzzle():
 				elif event.type == pg.KEYDOWN:
 					if event.key == pg.K_ESCAPE:
 						running = False
-					self._move_tile(event, path)
+					self._move_tile(event, self.path)
 			self._updateWin()
 		pg.quit()
 
@@ -94,7 +97,6 @@ class GuiPuzzle():
 
 	def _draw_text(self, text, fname, fsize, color, rect : tuple):
 		font = pg.font.SysFont(fname, fsize)
-		#if fsize == 90: print(font.get_height(), font.get_linesize()) # TMP
 		text_surface = font.render(text, True, pg.Color(color))
 		self.screen.blit(text_surface, rect)
 

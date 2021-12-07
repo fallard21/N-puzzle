@@ -7,6 +7,9 @@ class PuzzleError(Exception):
 
 	def __init__(self, msg):
 		self.err_msg = f"Error: {msg}"
+	
+	def __str__(self) -> str:
+		return self.err_msg
 
 
 class Node():
@@ -73,7 +76,7 @@ class PuzzleSolver():
 		self.goal = Node(goal)
 		self.closed = {self.start : None}
 
-	def run_Astar(self):
+	def run(self):
 		#self.start.set_h(self.goal.state)
 		heappush(self.queue, self.start)
 		while self.queue:
